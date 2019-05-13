@@ -63,5 +63,9 @@ freeline_project_description.json
 fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots
-fastlane/test_output
 fastlane/readme.md
+chooseimg/src/androidTest/
+chooseimg/src/test/
+.idea/codeStyles/Project.xml
+app/src/androidTest/
+app/src/test/
