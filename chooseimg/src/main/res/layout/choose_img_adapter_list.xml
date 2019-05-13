@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tool="http://schemas.android.com/tools"
+    android:background="@android:color/transparent">
+
+    <ImageView
+        android:id="@id/choose_img_adapter_img_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:gravity="center"
+        android:scaleType="centerCrop"
+        tool:src="@mipmap/choose_img_loading"
+        android:transitionName="sharedView" />
+
+    <ImageView
+        android:id="@id/choose_img_adapter_select"
+        android:layout_width="@dimen/choose_img_dp40"
+        android:layout_height="@dimen/choose_img_dp40"
+        android:layout_gravity="end"
+        android:padding="@dimen/choose_img_dp10"
+        android:src="@mipmap/choose_img_un_select" />
+
+</FrameLayout>

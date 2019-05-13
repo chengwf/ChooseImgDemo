@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="choose_img_toolbar" type="id" />
+    <item name="choose_img_menu_filter" type="id" />
+    <item name="choose_img_menu_sure" type="id" />
+    <item name="choose_img_list" type="id" />
+    <item name="choose_img_preview" type="id" />
+
+    <item name="choose_img_dialog_img_pre" type="id" />
+    <item name="choose_img_dialog_dir" type="id" />
+    <item name="choose_img_dialog_count" type="id" />
+    <item name="choose_img_dialog_guideline" type="id" />
+    <item name="choose_img_dialog_review" type="id" />
+
+    <item name="choose_img_adapter_select" type="id" />
+    <item name="choose_img_adapter_img_list" type="id" />
+
+
+    <string name="choose_img_app_name">ChoosePic</string>
+    <string name="choose_img_all_image">所有图片</string>
+    <string name="choose_img_sure">确定</string>
+
+
+    <dimen name="choose_img_dp72">72dp</dimen>
+    <dimen name="choose_img_dp10">10dp</dimen>
+    <dimen name="choose_img_dp40">40dp</dimen>
+
+    <dimen name="choose_img_sp16">16sp</dimen>
+
+
+    <color name="choose_img_dialog_dir_color">#2196f3</color>
+</resources>

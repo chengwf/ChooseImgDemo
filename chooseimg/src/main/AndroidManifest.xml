@@ -1,0 +1,12 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.chengwf.chooseimg">
+
+    <application>
+        <activity
+            android:name=".ChooseImgActivity"
+            android:launchMode="singleTop" />
+        <activity
+            android:name=".PreviewImgActivity"
+            android:launchMode="singleTop" />
+    </application>
+</manifest>

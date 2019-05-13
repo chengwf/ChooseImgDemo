@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tool="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/choose_img_dp72"
+    android:layout_margin="@dimen/choose_img_dp10">
+
+    <ImageView
+        android:id="@id/choose_img_dialog_img_pre"
+        android:layout_width="@dimen/choose_img_dp72"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        tool:src="@mipmap/choose_img_loading"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <android.support.constraint.Guideline
+        android:id="@id/choose_img_dialog_guideline"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <TextView
+        android:id="@id/choose_img_dialog_dir"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/choose_img_dp10"
+        android:gravity="center_vertical"
+        android:textColor="@color/choose_img_dialog_dir_color"
+        android:textSize="@dimen/choose_img_sp16"
+        app:layout_constraintBottom_toBottomOf="@id/choose_img_dialog_guideline"
+        app:layout_constraintLeft_toRightOf="@id/choose_img_dialog_img_pre"
+        app:layout_constraintTop_toTopOf="@id/choose_img_dialog_img_pre"
+        tool:text="所有图片" />
+
+    <TextView
+        android:id="@id/choose_img_dialog_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/choose_img_dp10"
+        android:textColor="@android:color/black"
+        app:layout_constraintBottom_toBottomOf="@id/choose_img_dialog_img_pre"
+        app:layout_constraintLeft_toRightOf="@id/choose_img_dialog_img_pre"
+        app:layout_constraintTop_toTopOf="@id/choose_img_dialog_guideline"
+        tool:text="123张" />
+
+</android.support.constraint.ConstraintLayout>

@@ -1,0 +1,266 @@
+package com.chengwf.chooseimg
+
+import android.Manifest
+import android.app.Activity
+import android.app.ActivityOptions
+import android.content.Context
+import android.content.Intent
+import android.content.res.Resources
+import android.provider.MediaStore
+import android.support.annotation.RequiresPermission
+import android.support.v4.app.ActivityOptionsCompat
+import android.view.View
+import com.bumptech.glide.request.RequestOptions
+
+object ChooseImgTool {
+
+    /**
+     * intent key:被选中的图片
+     */
+    const val KEY_SELECT = "select_image_list"
+    /**
+     * intent key:图片列表的列数
+     */
+    const val KEY_COLUMN_NUM = "column_num"
+    /**
+     * 最多可选数目
+     */
+    const val KEY_SELECT_MOST = "select_most"
+    /**
+     * requestCode
+     */
+    const val REQUEST_CODE = 1208
+
+
+    /**
+     * 图片列表的列数
+     */
+    internal var listColumnCount = 4
+    /**
+     * 按文件夹归类的ImageInfo
+     */
+    internal var dirList = ArrayList<ChooseImgData.ImageDir>()
+    /**
+     * 被选中的图片path集合
+     */
+    internal val checkedList = ArrayList<String>()
+    /**
+     * 可选择的图片的最大数量
+     */
+    private var mostNum: Int = 1
+
+    /**
+     * 取得本地所有图片的路径
+     */
+    internal fun getImgList(context: Context, selectList: ArrayList<String>): List<ChooseImgData.ImageInfo> {
+        dirList.clear()
+        val cursor = MediaStore.Images.Media.query(
+                context.contentResolver,
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, arrayOf(
+                // image id.
+                MediaStore.Images.Media._ID,
+                // image absolute path.
+                MediaStore.Images.Media.DATA,
+                // image name.
+                MediaStore.Images.Media.DISPLAY_NAME,
+                // The time to be added to the library.
+                MediaStore.Images.Media.DATE_ADDED,
+                // folder id.
+                MediaStore.Images.Media.BUCKET_ID,
+                // folder name.
+                MediaStore.Images.Media.BUCKET_DISPLAY_NAME
+        )
+        )
+        val list = ArrayList<ChooseImgData.ImageInfo>()
+
+        var chooseImgData: ChooseImgData.ImageInfo?
+        while (cursor.moveToNext()) {
+            chooseImgData = ChooseImgData.ImageInfo(
+                    cursor.getInt(cursor.getColumnIndex(MediaStore.Images.Media._ID))
+                    , cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA))
+                    , cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME))
+                    , cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media.BUCKET_ID))
+                    , cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.BUCKET_DISPLAY_NAME))
+                    , selectList.contains(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA)))
+            )
+
+            list.add(chooseImgData)
+
+            // 添加【所有图片】目录信息
+            if (dirList.size <= 0) {
+                val photoList = ArrayList<ChooseImgData.ImageInfo>()
+                photoList.add(chooseImgData)
+                dirList.add(ChooseImgData.ImageDir("所有图片", chooseImgData.path, photoList))
+            } else {
+                dirList[0].photoList.add(chooseImgData)
+            }
+            // 不存在
+            if (!isExistsByDir(chooseImgData)) {
+                val photoList = ArrayList<ChooseImgData.ImageInfo>()
+                photoList.add(chooseImgData)
+                dirList.add(ChooseImgData.ImageDir(chooseImgData.dir, chooseImgData.path, photoList))
+            }
+        }
+        cursor.close()
+        return list
+    }
+
+    /**
+     * 判断某个目录是否存在于{@link #dirList}中
+     */
+    private fun isExistsByDir(chooseImgData: ChooseImgData.ImageInfo): Boolean {
+
+        if (dirList.size <= 1) return false
+        var isExists = false
+        for (i in 1 until dirList.size) {
+            if (chooseImgData.dir == dirList[i].dir) {
+                dirList[i].photoList.add(chooseImgData)
+                isExists = true
+                break
+            }
+        }
+        return isExists
+    }
+
+    /**
+     * 获得所有图片信息
+     * @param dirName 要过滤的目录名字，只需要文件夹名字，可多个
+     * @param context 上下文
+     * @return 返回[ChooseImgData.ImageInfo]的ArrayList集合
+     */
+    @JvmStatic
+    fun getAllImg( context: Context, vararg dirName: String): ArrayList<ChooseImgData.ImageInfo> {
+
+        val cursor = MediaStore.Images.Media.query(context.contentResolver,
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, arrayOf(
+                // image id.
+                MediaStore.Images.Media._ID,
+                // image absolute path.
+                MediaStore.Images.Media.DATA,
+                // image name.
+                MediaStore.Images.Media.DISPLAY_NAME,
+                // The time to be added to the library.
+                MediaStore.Images.Media.DATE_ADDED,
+                // folder id.
+                MediaStore.Images.Media.BUCKET_ID,
+                // folder name.
+                MediaStore.Images.Media.BUCKET_DISPLAY_NAME
+        )
+        )
+
+        val list = ArrayList<ChooseImgData.ImageInfo>()
+        var chooseImgData: ChooseImgData.ImageInfo?
+        while (cursor.moveToNext()) {
+
+            if (dirName.isNotEmpty() && dirName.contains(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.BUCKET_DISPLAY_NAME))))
+                continue
+            chooseImgData = ChooseImgData.ImageInfo(
+                    cursor.getInt(cursor.getColumnIndex(MediaStore.Images.Media._ID))
+                    , cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA))
+                    , cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME))
+                    , cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media.BUCKET_ID))
+                    , cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.BUCKET_DISPLAY_NAME))
+                    , false
+            )
+            list.add(chooseImgData)
+        }
+        return list
+    }
+
+    /**
+     * Glide的一些设置
+     */
+    internal fun getReqOptByGlide(): RequestOptions {
+        return RequestOptions().centerCrop()
+                .dontAnimate()
+                .override(getImageSize(), getImageSize())
+                .placeholder(loadingRes)
+                .error(loadErrorRes)
+    }
+
+    /**
+     * 获得ImageView显示的宽高
+     * @return 正方形显示，宽高为屏幕宽度除以列表的列数
+     */
+    private fun getImageSize() =
+            Resources.getSystem().displayMetrics.widthPixels / listColumnCount
+
+    /**
+     * 设置图片列表列数
+     */
+    fun setColumnNum(columns: Int): ChooseImgTool {
+        listColumnCount = columns
+        return this
+    }
+
+    fun setChooseList(list: ArrayList<String>): ChooseImgTool {
+        checkedList.addAll(list)
+        return this
+    }
+
+    fun setChooseMost(mostNum: Int): ChooseImgTool {
+        this.mostNum = mostNum
+        return this
+    }
+
+    @RequiresPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+    fun start(context: Activity) {
+        val intent = Intent(context, ChooseImgActivity::class.java)
+        intent.putExtra(KEY_COLUMN_NUM, 3)
+        intent.putExtra(KEY_SELECT_MOST, 9)
+        context.startActivityForResult(Intent(context, ChooseImgActivity::class.java), REQUEST_CODE)
+    }
+
+    @JvmStatic
+    fun previewImg(view: View, path: String) {
+
+        val intent = Intent(view.context, PreviewImgActivity::class.java)
+                .putExtra("path", path)
+
+        val options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                view.context as Activity,
+                view,
+                "preview"
+        ).toBundle()
+
+        view.context.startActivity(intent, options)
+    }
+
+    private var loadingRes = R.mipmap.choose_img_loading
+    private var loadErrorRes = R.mipmap.choose_img_load_error
+
+    /**
+     * 列表图片的占位图
+     */
+    fun setLoadingRes(loadingRes: Int): ChooseImgTool {
+        this.loadingRes = loadingRes
+        return this
+    }
+
+    /**
+     * 列表图片加载失败时的图片
+     */
+    fun setLoadErrorRes(loadErrorRes: Int): ChooseImgTool {
+        this.loadErrorRes = loadErrorRes
+        return this
+    }
+
+    internal var checkedRes = R.mipmap.choose_img_select
+    internal var unCheckedRes = R.mipmap.choose_img_un_select
+
+    /**
+     * 图片的选中的状态
+     */
+    fun setCheckedRes(checkedRes: Int): ChooseImgTool {
+        this.checkedRes = checkedRes
+        return this
+    }
+
+    /**
+     * 图片未选中的状态
+     */
+    fun setUnCheckedRes(unCheckedRes: Int): ChooseImgTool {
+        this.unCheckedRes = unCheckedRes
+        return this
+    }
+}
