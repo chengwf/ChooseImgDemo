@@ -19,8 +19,10 @@ class MainActivity : AppCompatActivity() {
         requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE
                 , Manifest.permission.WRITE_EXTERNAL_STORAGE), 100)
 
+        println(checkCallingPermission(Manifest.permission.READ_EXTERNAL_STORAGE))
+        println(checkCallingPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE))
         bn_start.setOnClickListener {
-            if (checkCallingPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+//            if (checkCallingPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
                 ChooseImgTool.setChooseList(selectList)
                         .setChooseMost(9)
                         .setColumnNum(3)
