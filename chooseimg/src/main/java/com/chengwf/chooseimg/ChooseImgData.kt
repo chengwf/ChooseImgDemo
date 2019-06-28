@@ -19,9 +19,4 @@ class ChooseImgData {
         val dir: String,
         var isSelect: Boolean
     )
-
-    /**
-     * 图片文件夹信息
-     */
-    internal data class ImageDir(val dir: String, val photoPath: String, var photoList: ArrayList<ImageInfo>)
 }

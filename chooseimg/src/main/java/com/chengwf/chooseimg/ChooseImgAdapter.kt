@@ -28,7 +28,7 @@ internal class ChooseImgAdapter(layoutResId: Int, chooseImgData: List<ChooseImgD
             )
     }
 
-    fun setDirImg(imgList: ArrayList<ChooseImgData.ImageInfo>) {
+    fun setDirImg(imgList: List<ChooseImgData.ImageInfo>) {
         data.clear()
         data.addAll(imgList)
         notifyDataSetChanged()

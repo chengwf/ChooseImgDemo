@@ -28,6 +28,14 @@ allprojects {
         options.addStringOption('encoding', 'UTF-8')
 //        options.addStringOption('links', 'http://docs.oracle.com/javase/7/docs/api')
     }
+    //加上这些
+//    tasks.withType(Javadoc) {
+//        options{
+//            encoding "UTF-8"
+//            charSet 'UTF-8'
+//            links "http://docs.oracle.com/javase/7/docs/api"
+//        }
+//    }
 }
 
 task clean(type: Delete) {

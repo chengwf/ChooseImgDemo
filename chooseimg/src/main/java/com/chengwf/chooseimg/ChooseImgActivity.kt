@@ -54,7 +54,7 @@ internal class ChooseImgActivity : AppCompatActivity() {
         // 列表的列数
         ChooseImgTool.listColumnCount = intent.getIntExtra(ChooseImgTool.KEY_COLUMN_NUM, 3)
         // 最多可选数目
-        selectMost = intent.getIntExtra(ChooseImgTool.KEY_SELECT_MOST, selectMost)
+        selectMost = intent.getIntExtra(ChooseImgTool.KEY_SELECT_MOST, 9)
 
         initRecyclerView()
         initDialog()
@@ -91,14 +91,18 @@ internal class ChooseImgActivity : AppCompatActivity() {
         if (intent.hasExtra(ChooseImgTool.KEY_SELECT)) {
             val list = intent.getStringArrayListExtra(ChooseImgTool.KEY_SELECT)
             ChooseImgTool.checkedList.addAll(list)
+
         }
+        // 初始化图片list
+        ChooseImgTool.initPhotoList(applicationContext,ChooseImgTool.checkedList)
         // 设置副标题
         choose_img_toolbar.subtitle = "${ChooseImgTool.checkedList.size}/$selectMost"
-        mData.addAll(ChooseImgTool.getImgList(applicationContext, ChooseImgTool.checkedList))
+        mData.addAll(ChooseImgTool.getPhotoList())
 
         mAdapter = ChooseImgAdapter(R.layout.choose_img_adapter_list, mData)
         choose_img_list.adapter = mAdapter
         mAdapter.setOnItemChildClickListener { _, view, position ->
+
             when (view.id) {
                 R.id.choose_img_adapter_select -> {
 
@@ -125,15 +129,16 @@ internal class ChooseImgActivity : AppCompatActivity() {
 
         val review = contentView.findViewById<RecyclerView>(R.id.choose_img_dialog_review)
         review.layoutManager = LinearLayoutManager(this@ChooseImgActivity)
+
         val adapter =
-                ChooseImgDialogAdapter(R.layout.choose_img_adapter_dialog, ChooseImgTool.dirList)
+                ChooseImgDialogAdapter(R.layout.choose_img_adapter_dialog, ChooseImgTool.getPhotoList().distinctBy { it.dir })
         review.adapter = adapter
         adapter.setOnItemClickListener { _, _, position ->
             dialog.dismiss()
-            mAdapter.setDirImg(ChooseImgTool.dirList[position].photoList)
-            mAdapter.notifyDataSetChanged()
 
-            filterMenu.title = ChooseImgTool.dirList[position].dir
+            mAdapter.setDirImg(ChooseImgTool.getPhotoByDirArr(arrayOf(ChooseImgTool.getPhotoList().distinctBy { it.dir }[position].dir), applicationContext))
+
+            filterMenu.title = ChooseImgTool.getPhotoList().distinctBy { it.dir }[position].dir
         }
         dialog.setContentView(contentView)
     }

@@ -2,7 +2,6 @@ package com.chengwf.chooseimg
 
 import android.Manifest
 import android.app.Activity
-import android.app.ActivityOptions
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
@@ -11,6 +10,7 @@ import android.support.annotation.RequiresPermission
 import android.support.v4.app.ActivityOptionsCompat
 import android.view.View
 import com.bumptech.glide.request.RequestOptions
+import org.jetbrains.annotations.NotNull
 
 object ChooseImgTool {
 
@@ -39,7 +39,7 @@ object ChooseImgTool {
     /**
      * 按文件夹归类的ImageInfo
      */
-    internal var dirList = ArrayList<ChooseImgData.ImageDir>()
+    internal val photoList = ArrayList<ChooseImgData.ImageInfo>()
     /**
      * 被选中的图片path集合
      */
@@ -52,8 +52,8 @@ object ChooseImgTool {
     /**
      * 取得本地所有图片的路径
      */
-    internal fun getImgList(context: Context, selectList: ArrayList<String>): List<ChooseImgData.ImageInfo> {
-        dirList.clear()
+    internal fun initPhotoList(context: Context, selectList: ArrayList<String>) {
+        photoList.clear()
         val cursor = MediaStore.Images.Media.query(
                 context.contentResolver,
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI, arrayOf(
@@ -71,56 +71,32 @@ object ChooseImgTool {
                 MediaStore.Images.Media.BUCKET_DISPLAY_NAME
         )
         )
-        val list = ArrayList<ChooseImgData.ImageInfo>()
 
         var chooseImgData: ChooseImgData.ImageInfo?
         while (cursor.moveToNext()) {
             chooseImgData = ChooseImgData.ImageInfo(
                     cursor.getInt(cursor.getColumnIndex(MediaStore.Images.Media._ID))
-                    , cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA))
-                    , cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME))
-                    , cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media.BUCKET_ID))
-                    , cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.BUCKET_DISPLAY_NAME))
-                    , selectList.contains(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA)))
+                    ,
+                    cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA))
+                    ,
+                    cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME))
+                    ,
+                    cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media.BUCKET_ID))
+                    ,
+                    cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.BUCKET_DISPLAY_NAME))
+                    ,
+                    selectList.contains(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA)))
             )
 
-            list.add(chooseImgData)
-
-            // 添加【所有图片】目录信息
-            if (dirList.size <= 0) {
-                val photoList = ArrayList<ChooseImgData.ImageInfo>()
-                photoList.add(chooseImgData)
-                dirList.add(ChooseImgData.ImageDir("所有图片", chooseImgData.path, photoList))
-            } else {
-                dirList[0].photoList.add(chooseImgData)
-            }
-            // 不存在
-            if (!isExistsByDir(chooseImgData)) {
-                val photoList = ArrayList<ChooseImgData.ImageInfo>()
-                photoList.add(chooseImgData)
-                dirList.add(ChooseImgData.ImageDir(chooseImgData.dir, chooseImgData.path, photoList))
-            }
+            photoList.add(chooseImgData)
         }
         cursor.close()
-        return list
     }
 
     /**
-     * 判断某个目录是否存在于{@link #dirList}中
+     * 获得所有图片
      */
-    private fun isExistsByDir(chooseImgData: ChooseImgData.ImageInfo): Boolean {
-
-        if (dirList.size <= 1) return false
-        var isExists = false
-        for (i in 1 until dirList.size) {
-            if (chooseImgData.dir == dirList[i].dir) {
-                dirList[i].photoList.add(chooseImgData)
-                isExists = true
-                break
-            }
-        }
-        return isExists
-    }
+    fun getPhotoList() = photoList
 
     /**
      * 获得所有图片信息
@@ -129,43 +105,24 @@ object ChooseImgTool {
      * @return 返回[ChooseImgData.ImageInfo]的ArrayList集合
      */
     @JvmStatic
-    fun getAllImg( context: Context, vararg dirName: String): ArrayList<ChooseImgData.ImageInfo> {
+    fun getPhotoByDirArr(@NotNull dirName: Array<String>, context: Context): List<ChooseImgData.ImageInfo> {
 
-        val cursor = MediaStore.Images.Media.query(context.contentResolver,
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, arrayOf(
-                // image id.
-                MediaStore.Images.Media._ID,
-                // image absolute path.
-                MediaStore.Images.Media.DATA,
-                // image name.
-                MediaStore.Images.Media.DISPLAY_NAME,
-                // The time to be added to the library.
-                MediaStore.Images.Media.DATE_ADDED,
-                // folder id.
-                MediaStore.Images.Media.BUCKET_ID,
-                // folder name.
-                MediaStore.Images.Media.BUCKET_DISPLAY_NAME
-        )
-        )
-
-        val list = ArrayList<ChooseImgData.ImageInfo>()
-        var chooseImgData: ChooseImgData.ImageInfo?
-        while (cursor.moveToNext()) {
-
-            if (dirName.isNotEmpty() && dirName.contains(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.BUCKET_DISPLAY_NAME))))
-                continue
-            chooseImgData = ChooseImgData.ImageInfo(
-                    cursor.getInt(cursor.getColumnIndex(MediaStore.Images.Media._ID))
-                    , cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA))
-                    , cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME))
-                    , cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media.BUCKET_ID))
-                    , cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.BUCKET_DISPLAY_NAME))
-                    , false
-            )
-            list.add(chooseImgData)
+        if (photoList.isNullOrEmpty()) {
+            initPhotoList(context, arrayListOf(""))
         }
-        return list
+        return when {
+            dirName.isNotEmpty() && photoList.isNotEmpty() -> photoList.filter { dirName.contains(it.dir) }
+            else -> photoList
+        }
     }
+
+    /**
+     * 判断某个目录是否存在于[photoList]中
+     */
+    private fun isExistsByDir(chooseImgData: ChooseImgData.ImageInfo): Boolean {
+        return photoList.any { it.path == chooseImgData.path }
+    }
+
 
     /**
      * Glide的一些设置
@@ -205,18 +162,19 @@ object ChooseImgTool {
 
     @RequiresPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
     fun start(context: Activity) {
-        val intent = Intent(context, ChooseImgActivity::class.java)
-        intent.putExtra(KEY_COLUMN_NUM, 3)
-        intent.putExtra(KEY_SELECT_MOST, 9)
-        context.startActivityForResult(Intent(context, ChooseImgActivity::class.java), REQUEST_CODE)
+        val intent = Intent(context, ChooseImgActivity::class.java).apply {
+            putExtra(KEY_COLUMN_NUM, 3)
+            putExtra(KEY_SELECT_MOST, 9)
+        }
+        context.startActivityForResult(intent, REQUEST_CODE)
     }
 
     @JvmStatic
     fun previewImg(view: View, path: String) {
 
-        val intent = Intent(view.context, PreviewImgActivity::class.java)
-                .putExtra("path", path)
-
+        val intent = Intent(view.context, PreviewImgActivity::class.java).apply {
+            putExtra("path", path)
+        }
         val options = ActivityOptionsCompat.makeSceneTransitionAnimation(
                 view.context as Activity,
                 view,
